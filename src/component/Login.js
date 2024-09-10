@@ -1,16 +1,20 @@
 import { useRef, useState } from "react"
 import Header from "./Header"
 import { checkValidateData } from "../utils/validate"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 
 const Login = () => {
   const [isSignInForm,setIsSignInForm] = useState(true)
   const [errorMessage,setErrorMessage] = useState()
+  const dispatch = useDispatch();
 
   const email = useRef(null);
   const password = useRef(null);
+  const name = useRef(null);
 
   const handleClick = () => {
     const message = checkValidateData(email.current.value,password.current.value);
@@ -22,7 +26,15 @@ const Login = () => {
       createUserWithEmailAndPassword(auth,email.current.value,password.current.value)
       .then((userCredential) => {
         const user = userCredential.user;
-        console.log(user)
+        updateProfile(user, {
+          displayName: name.current.value, 
+          photoURL: "https://cdn-icons-png.flaticon.com/512/2202/2202112.png"
+        }).then(() => {
+          const {uid,email,displayName,photoURL} = auth.currentUser;
+          dispatch(addUser({uid:uid,email:email,displayName:displayName,photoURL:photoURL}));
+        }).catch((error) => {
+          setErrorMessage(error.message)
+        });
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -57,7 +69,7 @@ const Login = () => {
         <form onSubmit={(e)=>e.preventDefault()} className="bg-black absolute mt-60 mx-auto left-0 right-0 w-3/12 px-4 text-white rounded-lg opacity-90 py-8">
             <h1 className="font-bold text-3xl mb-2">{isSignInForm ? "Sign In" : "Sign Up"}</h1>
             {!isSignInForm &&
-                <input type="text" placeholder="Full Name" className="p-3 my-4 w-full bg-gray-700"/>
+                <input ref={name} type="text" placeholder="Full Name" className="p-3 my-4 w-full bg-gray-700"/>
             }
             <input autoComplete="email" ref={email} type="text" placeholder="Email" className="p-3 my-4 w-full bg-gray-700"/>
             <input autoComplete="current-password" ref={password} type="password" placeholder="Password" className="p-3 my-4 w-full bg-gray-700"/>
