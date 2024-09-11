@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { auth } from "../utils/firebase";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
+import { PROFILE_AVTAR } from "../utils/constants";
 
 
 const Login = () => {
@@ -28,7 +29,7 @@ const Login = () => {
         const user = userCredential.user;
         updateProfile(user, {
           displayName: name.current.value, 
-          photoURL: "https://cdn-icons-png.flaticon.com/512/2202/2202112.png"
+          photoURL: PROFILE_AVTAR
         }).then(() => {
           const {uid,email,displayName,photoURL} = auth.currentUser;
           dispatch(addUser({uid:uid,email:email,displayName:displayName,photoURL:photoURL}));
